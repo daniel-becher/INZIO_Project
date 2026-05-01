@@ -15,66 +15,57 @@ app = FastAPI()
 template = Jinja2Templates (directory="templates")
 
 def google_scrape(query: str):
-    options = Options()
+     options = Options()
+     options.add_argument("--headless=new")
+     options.add_argument("--no-sandbox")
+     options.add_argument("--disable-dev-shm-usage")
+     options.add_argument("--disable-gpu")
+     options.add_argument("--disable-extensions")
+     options.add_argument("--window-size=1920,1080")
+     options.add_argument("--disable-blink-features=AutomationControlled")
+     options.add_experimental_option("excludeSwitches", ["enable-automation"])
+     options.add_experimental_option('useAutomationExtension', False)
+     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)Chrome/120.0.0.0 Safari/537.36")
 
-    # Základní nastavení pro server
-    options.add_argument("--headless=new") # Nový, lépe maskovaný headless mód
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    
-    # Maskování robota
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option('useAutomationExtension', False)
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+     options.binary_location = "/usr/bin/chromium"
+     service = Service("/usr/bin/chromedriver")
+     driver = webdriver.Chrome(service=service, options=options)
+     results = []
 
-    # Pokud jsi na Railway, přidáme cestu k binárce (vycházím z tvých logů)
-    if os.environ.get("RAILWAY_ENVIRONMENT"):
-        options.binary_location = "/usr/bin/chromium"
-    
-    driver = webdriver.Chrome(options=options)
-    results = []
+     try:
+         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+             "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+         })
+         url = f"https://www.google.com/search?q={query}&hl=cs"
+         driver.get(url)
 
-    try:
-        # !!! KLÍČOVÝ KROK: Skrytí příznaku webdriver PŘED načtením stránky !!!
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-        })
+         try:
+             cookie_button = WebDriverWait(driver, 5).until(
+                 EC.element_to_be_clickable((By.ID, "L2AGLb"))
+             )
+             cookie_button.click()
+         except:
+             pass
 
-        url = f"https://www.google.com/search?q={query}&hl=cs"
-        driver.get(url)
+         wait = WebDriverWait(driver, 15)
+         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h3.LC20lb")))
 
-        # Zkusíme odkliknout cookies, pokud tam jsou
-        try:
-            cookie_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.ID, "L2AGLb"))
-            )
-            cookie_button.click()
-        except:
-            pass
-
-        # Čekáme na výsledky
-        wait = WebDriverWait(driver, 10)
-        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h3.LC20lb")))
-
-        elements = driver.find_elements(By.CSS_SELECTOR, "h3.LC20lb")
-        for i, el in enumerate(elements):
-            try:
-                parent = el.find_element(By.XPATH, "./..")
-                results.append({
-                    "order": i+1,
-                    "title": el.text,
-                    "link": parent.get_attribute("href")
-                })
-            except:
-                continue
-
-    except Exception as e:
-        print(f"Error during scraping: {e}")
-    finally:
-        driver.quit()
-    return results
+         elements = driver.find_elements(By.CSS_SELECTOR, "h3.LC20lb")
+         for i, el in enumerate(elements):
+             try:
+                 parent = el.find_element(By.XPATH, "./..")
+                 results.append({
+                     "order": i + 1,
+                     "title": el.text,
+                     "link": parent.get_attribute("href")
+                 })
+             except:
+                 continue
+     except Exception as e:
+         print(f"Error during scraping: {e}")
+     finally:
+         driver.quit()
+     return results
 
 @app.get("/", response_class=HTMLResponse)
 async def read(request: Request): 

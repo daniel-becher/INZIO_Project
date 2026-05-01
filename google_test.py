@@ -73,3 +73,9 @@ async def post(key_word: str = Form(...)):
         json.dump(data, f, indent=4, ensure_ascii=False)
 
     return FileResponse(path=file_path, filename="results_google.json", media_type="application/json")
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

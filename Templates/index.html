@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>FastAPI Google Scraper</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px; }
+        input { padding: 10px; width: 300px; }
+        button { padding: 10px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h1>Praktický test: Scraper</h1>
+    <form action="/search" method="post">
+        <!-- Bod 1 & 2: Jeden input pro klíčové slovo -->
+        <input type="text" name="key_word" placeholder="Co chcete najít?" required>
+        <button type="submit">Hledat a stáhnout JSON</button>
+    </form>
+</body>
+</html>

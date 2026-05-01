@@ -2,6 +2,8 @@ from fastapi import Form, FastAPI, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 import json
+import os
+from webdriver_manager.chrome import ChromeDriverManager
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -26,8 +28,12 @@ def google_scrape(query: str):
      options.add_experimental_option('useAutomationExtension', False)
      options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)Chrome/120.0.0.0 Safari/537.36")
 
-     options.binary_location = "/usr/bin/chromium"
-     service = Service("/usr/bin/chromedriver")
+     if os.path.exists("/usr/bin/chromium") and os.path.exists("/usr/bin/chromedriver"):
+         options.binary_location = "/usr/bin/chromium"
+         service = Service("/usr/bin/chromedriver")
+     else:
+         service = Service(ChromeDriverManager().install())
+         
      driver = webdriver.Chrome(service=service, options=options)
      results = []
 

@@ -50,11 +50,10 @@ def google_scrape(query: str):
          wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h3.LC20lb")))
 
          elements = driver.find_elements(By.CSS_SELECTOR, "h3.LC20lb")
-         for i, el in enumerate(elements):
+         for el in elements:
              try:
                  parent = el.find_element(By.XPATH, "./..")
                  results.append({
-                     "order": i + 1,
                      "title": el.text,
                      "link": parent.get_attribute("href")
                  })

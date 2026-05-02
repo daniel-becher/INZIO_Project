@@ -24,15 +24,19 @@ Moderní webový scraper postavený na **FastAPI** a **Selenium**, který automa
    ```bash
    git clone [https://github.com/daniel-becher/inizio.git](https://github.com/daniel-becher/inizio.git)
    cd inizio
+    ```
 
 2. **Instalace závislostí:**
    ```bash
    pip install -r requirements.txt
+    ```
 
 3. **Spuštění aplikace:**
    ```bash
    python google_test.py
+    ```
 
 4. **Spuštění testů:**
    ```bash
    pytest unit_tests.py
+   ```
